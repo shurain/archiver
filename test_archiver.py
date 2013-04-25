@@ -54,7 +54,30 @@ class TestDiffbotTransformer(unittest.TestCase):
 
 class TestPDFFetcher(unittest.TestCase):
     def setUp(self):
-        pass
+        self.url = 'http://httpbin.org/'
+        self.pdf_url = 'http://httpbin.org/response-headers?Content-Type=application/pdf;%20charset=UTF-8&Server=httpbin'
+        self.html_url = 'http://httpbin.org/response-headers?Content-Type=text/html;%20charset=UTF-8&Server=httpbin'
+
+    def test_url_fetch(self):
+        with mock.patch('requests.get') as requests_get:
+            resource = URLFetcher(self.url)
+            self.assertTrue(requests_get.called)
+
+    def test_pdf_fetch(self):
+        resource = URLFetcher(self.pdf_url)
+        self.assertTrue(resource.is_PDF())
+
+    def test_html_fetch(self):
+        resource = URLFetcher(self.html_url)
+        self.assertFalse(resource.is_PDF())
+        self.assertTrue(resource.is_HTML())
+
+    def test_size_limit(self):
+        resource = URLFetcher(self.pdf_url)
+        # This raises error if we forgot to cast the 'content-length' header to int
+        # '104' > 100 * 2**10 * 2**10
+        resource.fetch()
+
 
 class TestHTMLItem(unittest.TestCase):
     pass

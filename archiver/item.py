@@ -13,11 +13,23 @@ class PinboardItem(Item):
         return self.url
 
 class PDFItem(Item):
-    def __init__(self, data):
-        #data is from URLFetch
-        pass
+    @classmethod
+    def from_pinboard_item(cls, item):
+        pdfitem = cls()
+        pdfitem.url = item.url
+        pdfitem.title = item.title
+        pdfitem.time = item.time
+        pdfitem.body = item.body
+        pdfitem.tags = item.tags
+        return pdfitem
 
 class HTMLItem(Item):
-    def __init__(self, data):
-        #data is from URLFetch
-        pass
+    @classmethod
+    def from_pinboard_item(cls, item):
+        htmlitem = cls()
+        htmlitem.url = item.url
+        htmlitem.title = item.title
+        htmlitem.time = item.time
+        htmlitem.body = item.body
+        htmlitem.tags = item.tags
+        return htmlitem 
