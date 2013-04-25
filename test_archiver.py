@@ -2,11 +2,15 @@
 import unittest
 import mock
 from datetime import datetime
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 from archiver.item import PinboardItem
 from archiver.source import PinboardSource
 from archiver import sink
-from archiver import transformer
+from archiver.transformer import DiffbotTransformer
 from archiver.fetcher import URLFetcher
 from archiver.settings import *
 
@@ -50,9 +54,34 @@ class TestEvernoteSink(unittest.TestCase):
     pass
 
 class TestDiffbotTransformer(unittest.TestCase):
-    pass
+    def setUp(self):
+        self.url = 'http://httpbin.org/'
+        self.json_result = """{"text":"Freely hosted in HTTP & HTTPS flavors.\n\n\nTesting an HTTP Library can become difficult sometimes. PostBin.org is fantastic for testing POST requests, but not much else. This exists to cover all kinds of HTTP scenarios. Additional endpoints are being considered (e.g. \/deflate).\nAll endpoint responses are JSON-encoded.\nEXAMPLES\n$ curl http:\/\/httpbin.org\/ip\n{\"origin\": \"24.127.96.129\"}\n$ curl http:\/\/httpbin.org\/user-agent\n{\"user-agent\": \"curl\/7.19.7 (universal-apple-darwin10.0) libcurl\/7.19.7 OpenSSL\/0.9.8l zlib\/1.2.3\"}\n$ curl http:\/\/httpbin.org\/get\n{ \"args\": {}, \"headers\": { \"Accept\": \"*\/*\", \"Connection\": \"close\", \"Content-Length\": \"\", \"Content-Type\": \"\", \"Host\": \"httpbin.org\", \"User-Agent\": \"curl\/7.19.7 (universal-apple-darwin10.0) libcurl\/7.19.7 OpenSSL\/0.9.8l zlib\/1.2.3\" }, \"origin\": \"24.127.96.129\", \"url\": \"http:\/\/httpbin.org\/get\" }\n$ curl -I http:\/\/httpbin.org\/status\/418\nHTTP\/1.1 418 I'M A TEAPOT Server: nginx\/0.7.67 Date: Mon, 13 Jun 2011 04:25:38 GMT Connection: close x-more-info: http:\/\/tools.ietf.org\/html\/rfc2324 Content-Length: 135\nAUTHOR\nA Kenneth Reitz Project.\nSEE ALSO\nhttp:\/\/python-requests.org","title":"httpbin(1): HTTP Client Testing Service","type":"article","url":"http:\/\/httpbin.org\/","xpath":"\/HTML[1]\/BODY[1]\/DIV[1]"}"""
+        self.json_html_result = """{"text":"Freely hosted in HTTP & HTTPS flavors.\n\n\nTesting an HTTP Library can become difficult sometimes. PostBin.org is fantastic for testing POST requests, but not much else. This exists to cover all kinds of HTTP scenarios. Additional endpoints are being considered (e.g. \/deflate).\nAll endpoint responses are JSON-encoded.\nEXAMPLES\n$ curl http:\/\/httpbin.org\/ip\n{\"origin\": \"24.127.96.129\"}\n$ curl http:\/\/httpbin.org\/user-agent\n{\"user-agent\": \"curl\/7.19.7 (universal-apple-darwin10.0) libcurl\/7.19.7 OpenSSL\/0.9.8l zlib\/1.2.3\"}\n$ curl http:\/\/httpbin.org\/get\n{ \"args\": {}, \"headers\": { \"Accept\": \"*\/*\", \"Connection\": \"close\", \"Content-Length\": \"\", \"Content-Type\": \"\", \"Host\": \"httpbin.org\", \"User-Agent\": \"curl\/7.19.7 (universal-apple-darwin10.0) libcurl\/7.19.7 OpenSSL\/0.9.8l zlib\/1.2.3\" }, \"origin\": \"24.127.96.129\", \"url\": \"http:\/\/httpbin.org\/get\" }\n$ curl -I http:\/\/httpbin.org\/status\/418\nHTTP\/1.1 418 I'M A TEAPOT Server: nginx\/0.7.67 Date: Mon, 13 Jun 2011 04:25:38 GMT Connection: close x-more-info: http:\/\/tools.ietf.org\/html\/rfc2324 Content-Length: 135\nAUTHOR\nA Kenneth Reitz Project.\nSEE ALSO\nhttp:\/\/python-requests.org","title":"httpbin(1): HTTP Client Testing Service","html":"<div><p>Freely hosted in <a href=\"http:\/\/httpbin.org\">HTTP<\/a> &amp;\n<a href=\"https:\/\/httpbin.org\">HTTPS<\/a> flavors.<\/p><h2 id=\"ENDPOINTS\">ENDPOINTS<\/h2><h2 id=\"DESCRIPTION\">DESCRIPTION<\/h2><p>Testing an HTTP Library can become difficult sometimes. PostBin.org is fantastic\nfor testing POST requests, but not much else. This exists to cover all kinds of HTTP\nscenarios. Additional endpoints are being considered (e.g. <code>\/deflate<\/code>).<\/p><p>All endpoint responses are JSON-encoded.<\/p><h2 id=\"EXAMPLES\">EXAMPLES<\/h2><h3 id=\"-curl-http-httpbin-org-ip\">$ curl http:\/\/httpbin.org\/ip<\/h3><pre>&lt;code&gt;{&quot;origin&quot;: &quot;24.127.96.129&quot;}\n&lt;\/code&gt;<\/pre><h3 id=\"-curl-http-httpbin-org-user-agent\">$ curl http:\/\/httpbin.org\/user-agent<\/h3><pre>&lt;code&gt;{&quot;user-agent&quot;: &quot;curl\/7.19.7 (universal-apple-darwin10.0) libcurl\/7.19.7 OpenSSL\/0.9.8l zlib\/1.2.3&quot;}\n&lt;\/code&gt;<\/pre><h3 id=\"-curl-http-httpbin-org-get\">$ curl http:\/\/httpbin.org\/get<\/h3><pre>&lt;code&gt;{\n   &quot;args&quot;: {},\n   &quot;headers&quot;: {\n      &quot;Accept&quot;: &quot;*\/*&quot;,\n      &quot;Connection&quot;: &quot;close&quot;,\n      &quot;Content-Length&quot;: &quot;&quot;,\n      &quot;Content-Type&quot;: &quot;&quot;,\n      &quot;Host&quot;: &quot;httpbin.org&quot;,\n      &quot;User-Agent&quot;: &quot;curl\/7.19.7 (universal-apple-darwin10.0) libcurl\/7.19.7 OpenSSL\/0.9.8l zlib\/1.2.3&quot;\n   },\n   &quot;origin&quot;: &quot;24.127.96.129&quot;,\n   &quot;url&quot;: &quot;http:\/\/httpbin.org\/get&quot;\n}\n&lt;\/code&gt;<\/pre><h3 id=\"-curl-I-http-httpbin-org-status-418\">$ curl -I http:\/\/httpbin.org\/status\/418<\/h3><pre>&lt;code&gt;HTTP\/1.1 418 I'M A TEAPOT\nServer: nginx\/0.7.67\nDate: Mon, 13 Jun 2011 04:25:38 GMT\nConnection: close\nx-more-info: http:\/\/tools.ietf.org\/html\/rfc2324\nContent-Length: 135\n&lt;\/code&gt;<\/pre><h2 id=\"AUTHOR\">AUTHOR<\/h2><p>A <a href=\"http:\/\/kennethreitz.com\/pages\/open-projects.html\">Kenneth Reitz<\/a>\nProject.<\/p><h2 id=\"SEE-ALSO\">SEE ALSO<\/h2><p><a data-bare-link=\"true\" href=\"http:\/\/python-requests.org\">http:\/\/python-requests.org<\/a><\/p><\/div>","type":"article","url":"http:\/\/httpbin.org\/","xpath":"\/HTML[1]\/BODY[1]\/DIV[1]"}"""
+        self.diffbot = DiffbotTransformer(DIFFBOT_TOKEN)
 
-class TestPDFFetcher(unittest.TestCase):
+    def test_extract_body(self):
+        with mock.patch('requests.get') as requests_get:
+            requests_get.return_value.content = self.json_result
+            json_result = self.diffbot.extract(self.url)
+
+            requests_get.assert_called_with(
+                'https://www.diffbot.com/api/article?token={}&url=http://httpbin.org/'.format(DIFFBOT_TOKEN))
+
+        self.assertEquals(json.dumps(json_result, sort_keys=True), json.dumps(self.json_result, sort_keys=True))
+
+    def test_extract_body_html(self):
+        with mock.patch('requests.get') as requests_get:
+            requests_get.return_value.content = self.json_result
+            json_result = self.diffbot.extract(self.url, html=True)
+
+            requests_get.assert_called_with(
+                'https://www.diffbot.com/api/article?token={}&url=http://httpbin.org/&html'.format(DIFFBOT_TOKEN))
+
+        self.assertEquals(json.dumps(json_result, sort_keys=True), json.dumps(self.json_html_result, sort_keys=True))
+
+
+class TestURLFetcher(unittest.TestCase):
     def setUp(self):
         self.url = 'http://httpbin.org/'
         self.pdf_url = 'http://httpbin.org/response-headers?Content-Type=application/pdf;%20charset=UTF-8&Server=httpbin'
@@ -77,13 +106,6 @@ class TestPDFFetcher(unittest.TestCase):
         # This raises error if we forgot to cast the 'content-length' header to int
         # '104' > 100 * 2**10 * 2**10
         resource.fetch()
-
-
-class TestHTMLItem(unittest.TestCase):
-    pass
-
-class TestPDFItem(unittest.TestCase):
-    pass
 
 class TestArchive(unittest.TestCase):
     pass
