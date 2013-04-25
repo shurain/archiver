@@ -7,7 +7,7 @@ from archiver.item import PinboardItem
 from archiver.source import PinboardSource
 from archiver import sink
 from archiver import transformer
-from archiver import fetcher
+from archiver.fetcher import URLFetcher
 from archiver.settings import *
 
 
@@ -36,14 +36,25 @@ class TestPinboardSource(unittest.TestCase):
             requests_get.assert_called_with(
                 'https://api.pinboard.in/v1/posts/all?auth_token={}&fromdt={}'.format(self.PINBOARD_API_TOKEN, datestr))
 
+    def test_fetch_all(self):
+        with mock.patch('requests.get') as requests_get:
+            requests_get.return_value.content = self.xml
+
+            bookmarks = self.pin.fetch_all()
+            requests_get.assert_called_with(
+                'https://api.pinboard.in/v1/posts/all?auth_token={}'.format(self.PINBOARD_API_TOKEN))
+
+            self.assertEquals(bookmarks[0].url, "http://estima.wordpress.com/2013/04/25/axon")
+
 class TestEvernoteSink(unittest.TestCase):
     pass
 
-class TestDiffbotMiddleware(unittest.TestCase):
+class TestDiffbotTransformer(unittest.TestCase):
     pass
 
 class TestPDFFetcher(unittest.TestCase):
-    pass
+    def setUp(self):
+        pass
 
 class TestHTMLItem(unittest.TestCase):
     pass

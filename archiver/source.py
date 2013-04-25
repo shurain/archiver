@@ -53,7 +53,8 @@ class PinboardSource(Source):
         return self.parse_xml(self.grab_xml(url))
 
     def fetch_all(self):
-        pass
+        url = self.URL + 'posts/all?auth_token={}'.format(self.token)
+        return self.parse_xml(self.grab_xml(url))
 
     def fetch(self):
         #FIXME
