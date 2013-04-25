@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from archiver.source import PinboardSource
 from archiver.sink import EvernoteSink
 from archiver.fetcher import URLFetcher
@@ -24,13 +29,15 @@ def main():
             item.content = resource.fetch()
         elif resource.is_HTML():
             item = HTMLItem.from_pinboard_item(bookmark)
-            item.meta = diffbot.extract(item.url)
+            json_result = diffbot.extract(item.url, html=True)
+            json_object = json.loads(json_result)
+            item.content = json_object['html']
 
         items.append(item)
 
     # evernote = EvernoteSink(EVERNOTE_DEVELOPER_TOKEN)
     for item in items:
-        print item
+        print item.content[:20]
     #     evernote.push(item)
 
 
