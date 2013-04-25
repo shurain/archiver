@@ -1,6 +1,8 @@
 Archiver
 ========
 
+WORK IN PROGRESS. THIS DOES NOT WORK. YET!
+
 Archive all things possible.
 
 Ultimately aiming to archive anything to anyware without hassle.
