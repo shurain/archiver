@@ -13,15 +13,16 @@ class URLFetcher(object):
     def content_type(self):
         return self.response.headers['content-type']
 
+    def is_PDF(self):
+        if self.response.headers['content-type'] == 'application/pdf':
+            return True
+        if self.response.content[:4] == '%PDF':
+            return True
+        else:
+            return False
+
     def fetch(self):
         if self.response.headers['content-length'] > SIZELIMIT:
             #FIXME create a specific exception
             raise Exception("File too large")
         return self.response.content
-
-class PDFFetcher(URLFetcher):
-    def has_pdf_magic_number(self):
-        if self.response.content[:4] == '%PDF':
-            return True
-        else:
-            return False
