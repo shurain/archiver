@@ -29,7 +29,7 @@ class URLFetcher(object):
             return False
 
     def fetch(self):
-        if self.response.headers['content-length'] > SIZELIMIT:
+        if int(self.response.headers['content-length']) > self.SIZELIMIT:
             #FIXME create a specific exception
             raise Exception("File too large")
         return self.response.content
