@@ -3,14 +3,14 @@ Archiver
 
 Archive all things possible.
 
+Ultimately aiming to archive anything to anyware without hassle.
+
 Usage
 -----
 
-### PDF
+### Shell
 
-Given an URL pointing to a PDF, it should fetch the PDF from the location to designated location.
+    $ archive
 
-### HTML Page
+Executing on command line should archive stuff from data source to data sync.
 
-Given an URL pointing to a regular HTML page,
-it should fetch the page and save the related resources (images, flash, etc.) to designated location.

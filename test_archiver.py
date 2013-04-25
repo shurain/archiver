@@ -1,23 +1,25 @@
 #!/usr/bin/env python
-import mock
 import unittest
-from archiver import fetch
+from archiver import sources
+from archiver import sinks
+from archiver import middleware
+from archiver import fetcher
 
 
-class TestPDF(unittest.TestCase):
-    #FIXME test network problems
-    #FIXME mock stuff
-    def setUp(self):
-        self.link = "http://nvidia.com/content/PDF/sc_2010/CUDA_Tutorial/SC10_Accelerating_GPU_Computation_Through_Mixed-Precision_Methods.pdf"
+class TestPinboardSource(unittest.TestCase):
+    pass
 
-    def test_content_type(self):
-        l = fetch.Archive(self.link)
-        self.assertEqual(l.content_type(), 'application/pdf')
+class TestEvernoteSink(unittest.TestCase):
+    pass
 
-    def test_fetch_pdf(self):
-        l = fetch.Archive(self.link)
-        pass
+class TestDiffbotMiddleware(unittest.TestCase):
+    pass
 
+class TestPDFFetcher(unittest.TestCase):
+    pass
+
+class TestArchive(unittest.TestCase):
+    pass
 
 if __name__ == '__main__':
     unittest.main()
