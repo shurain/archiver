@@ -10,6 +10,9 @@ class URLFetcher(object):
         # XXX maybe stream might timeout?
         self.response = requests.get(url, allow_redirects=True, stream=True)
 
+    def content_type(self):
+        return self.response.headers['content-type']
+
     def fetch(self):
         if self.response.headers['content-length'] > SIZELIMIT:
             #FIXME create a specific exception
