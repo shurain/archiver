@@ -10,13 +10,20 @@ class URLFetcher(object):
         # XXX maybe stream might timeout?
         self.response = requests.get(url, allow_redirects=True, stream=True)
 
+    @property
     def content_type(self):
-        return self.response.headers['content-type']
+        return self.response.headers['content-type'].split(';')[0].strip()
 
     def is_PDF(self):
-        if self.response.headers['content-type'] == 'application/pdf':
+        if self.content_type == 'application/pdf':
             return True
         if self.response.content[:4] == '%PDF':
+            return True
+        else:
+            return False
+
+    def is_HTML(self):
+        if self.content_type == 'text/html':
             return True
         else:
             return False

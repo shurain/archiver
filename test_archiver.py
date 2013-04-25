@@ -18,6 +18,12 @@ class TestDiffbotMiddleware(unittest.TestCase):
 class TestPDFFetcher(unittest.TestCase):
     pass
 
+class TestHTMLItem(unittest.TestCase):
+    pass
+
+class TestPDFItem(unittest.TestCase):
+    pass
+
 class TestArchive(unittest.TestCase):
     pass
 
