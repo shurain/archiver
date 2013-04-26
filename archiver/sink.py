@@ -51,7 +51,7 @@ class EvernoteSink(Sink):
 
         note.content = """<?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-        <en-note>{}""".format(content)
+        <en-note>{}""".format(content.encode('ascii', 'xmlcharrefreplace'))
 
         if resources:
             #FIXME
@@ -64,7 +64,7 @@ class EvernoteSink(Sink):
 
     def push(self, item):
         kwargs = {
-            'title': item.title,
+            'title': item.title.encode('utf-8', 'xmlcharrefreplace'),
             'content': item.body,
         }
 
