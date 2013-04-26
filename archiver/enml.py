@@ -9,16 +9,20 @@ HTML to ENML Converter
 
 http://dev.evernote.com/start/core/enml.php
 """
-try:
-    from lxml import etree
-except ImportError:
-    # Python 2.5
-    import xml.etree.cElementTree as etree
+from lxml import etree
+from lxml.html import fromstring
 from urlparse import urlparse
+from itertools import chain
 
 
 def html2enml(html):
-    return ''
+    root = fromstring(html)
+    root = remove_prohibited_elements(root)
+    root = remove_prohibited_attributes(root)
+    # Skipping dtd validation
+    # validate_dtd(html, f):
+    root.tag = 'div'
+    return etree.tostring(root)
 
 def remove_prohibited_elements(root):
     prohibited_elements = [
@@ -81,25 +85,24 @@ def remove_prohibited_attributes(root):
     ]
 
     regex_prohibited_attributes = [
-        "on",  # starts with on
+        "on",  # starts with on. original documentation says "on*"
     ]
 
     # Note that this will change the contents of root node inplace
-    for node in root.findall('.//*'):
+    for node in chain(root.findall('.//*'), [root]):
         for att in prohibited_attributes:
             if att in node.attrib:
                 node.attrib.pop(att)
         for att in regex_prohibited_attributes:
             [node.attrib.pop(k) for k in node.attrib.keys() if k.startswith(att)]
+
+        #url sanitization
         if 'href' in node.attrib:
             url = urlparse(node.attrib.get('href'))
             if url.scheme not in ('http', 'https', 'file'):
                 node.attrib.pop('href')
 
     return root
-
-def sanitize_urls():
-    return ''
 
 def validate_dtd(html, f):
     """

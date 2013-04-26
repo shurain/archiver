@@ -7,11 +7,8 @@ try:
 except ImportError:
     import json
 from StringIO import StringIO
-try:
-    from lxml import etree
-except ImportError:
-    # Python 2.5
-    import xml.etree.cElementTree as etree
+from lxml import etree
+from itertools import chain
 
 
 from archiver.item import PinboardItem, HTMLItem, PDFItem
@@ -179,7 +176,8 @@ class TestENMLSanitization(unittest.TestCase):
     def test_remove_prohibited_attributes(self):
         root = etree.fromstring("""<div id="hello">remove me<p onerror="dosomething">remove me</p></div>""")
         res = remove_prohibited_attributes(root)
-        for n in res.findall('.//*'):
+        #res.findall('.//*') will only search for the child
+        for n in chain([res], res.findall('.//*')):
             self.assertTrue('onerror' not in n.attrib)
             self.assertTrue('id' not in n.attrib)
 
