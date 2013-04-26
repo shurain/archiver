@@ -165,6 +165,7 @@ class TestEvernoteSink(unittest.TestCase):
 
 
 class TestENMLSanitization(unittest.TestCase):
+    # Commented out because it is way too slow. Need a means to cache the DTD object.
     # def setUp(self):
     #     with open("archiver/enml2.dtd", 'r') as f:
     #         dtd = f.read()
@@ -187,6 +188,12 @@ class TestENMLSanitization(unittest.TestCase):
         res = remove_prohibited_elements(root)
         for n in res.findall('.//*'):
             self.assertTrue('form' not in n.tag)
+
+    def test_url_sanitization(self):
+        root = etree.fromstring("""<div><a href="http://httpbin.org">http</a><a href="https://httpbin.org">https</a><a href="ftp://httpbin.org">ftp</a></div>""")
+        res = remove_prohibited_attributes(root)
+        for n in res.findall('.//*'):
+            self.assertTrue('ftp' not in n.attrib)
 
 
 class TestArchive(unittest.TestCase):

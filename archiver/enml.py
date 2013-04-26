@@ -14,6 +14,7 @@ try:
 except ImportError:
     # Python 2.5
     import xml.etree.cElementTree as etree
+from urlparse import urlparse
 
 
 def html2enml(html):
@@ -90,6 +91,10 @@ def remove_prohibited_attributes(root):
                 node.attrib.pop(att)
         for att in regex_prohibited_attributes:
             [node.attrib.pop(k) for k in node.attrib.keys() if k.startswith(att)]
+        if 'href' in node.attrib:
+            url = urlparse(node.attrib.get('href'))
+            if url.scheme not in ('http', 'https', 'file'):
+                node.attrib.pop('href')
 
     return root
 
