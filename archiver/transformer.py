@@ -10,7 +10,7 @@ class DiffbotTransformer(Transformer):
     def __init__(self, token):
         self.token = token
 
-    def extract(self, url, callback=False, html=False, dontStripAds=False, timeout=False, tags=False, comments=False, summary=False):
+    def extract(self, url, callback=False, html=False, dontStripAds=False, timeout=False, tags=True, comments=False, summary=True):
         args = {
             'callback': callback,
             'html': html,

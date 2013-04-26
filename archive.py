@@ -18,24 +18,24 @@ from archiver.enml import html2enml
 
 def main():
     pinboard = PinboardSource(PINBOARD_API_TOKEN)
-    datestr = '2013-04-26T00:00:00Z'
+    datestr = '2013-04-26T04:00:00Z'
 
     bookmarks = pinboard.fetch_from_date(datestr)
 
     diffbot = DiffbotTransformer(DIFFBOT_TOKEN)
 
     items = []
-    for bookmark in bookmarks:
+    for bookmark in reversed(bookmarks):
         try:
             resource = URLFetcher(bookmark.url)
         except requests.exceptions.ConnectionError as e:
-            logging.error("Failed to fetch resource at {} due to {}".format(bookmark.url, e))
+            logging.error("Failed to fetch resource at {}".format(bookmark.url))
+            logging.error("Reason: {}".format(e))
             continue
 
         if resource.is_PDF():
             item = PDFItem.from_pinboard_item(bookmark)
             item.content = 'PDF CONTENT'
-            # item.content = resource.fetch()
         elif resource.is_HTML():
             item = HTMLItem.from_pinboard_item(bookmark)
             json_result = diffbot.extract(item.url, html=True)
@@ -49,12 +49,11 @@ def main():
                 logging.error("Reason: {}".format(e))
                 logging.error("Degrading to using text summary")
                 item.content = json_object['text']
-                # Check for default tags
-                if not item.tags:
-                    # FIXME check for excluded tags
-                    # FIXME fetch tags from diffbot
-                    pass
-
+            # Check for default tags
+            if not item.tags or (item.tags.lower() == 'unread' and len(item.tags.split()) == 1):
+                # FIXME seemingly random criteria for checking tags
+                # autotag tells that this was autotagged.
+                item.tags = 'autotag ' + ' '.join(('_'.join(x.split()) for x in json_object['tags']))  # diffbot tags
 
         items.append(item)
 
