@@ -13,15 +13,31 @@ from lxml import etree
 from lxml.html import fromstring
 from urlparse import urlparse
 from itertools import chain
+from tidylib import tidy_document, tidy_fragment
+
+import logging
 
 
 def html2enml(html):
-    root = fromstring(html)
+    doc, err= tidy_fragment(
+        html,
+        options={
+            "output-xhtml": 1,
+            "drop-proprietary-attributes": 1,
+            "merge-divs": 1,
+            "clean": 1
+        }
+    )
+
+    root = fromstring(doc)
+    # root = fromstring(html)
     root = remove_prohibited_elements(root)
     root = remove_prohibited_attributes(root)
     # Skipping dtd validation
     # validate_dtd(html, f):
     root.tag = 'div'
+    # logging.debug(root)
+
     return etree.tostring(root)
 
 def remove_prohibited_elements(root):
