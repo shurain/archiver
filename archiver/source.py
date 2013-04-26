@@ -1,8 +1,4 @@
-try:
-    from lxml import etree
-except ImportError:
-    # Python 2.5
-    import xml.etree.cElementTree as etree
+from lxml import etree
 import requests
 from datetime import datetime
 

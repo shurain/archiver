@@ -195,7 +195,11 @@ class TestENMLSanitization(unittest.TestCase):
 
 
 class TestArchive(unittest.TestCase):
-    pass
+    def setUp(self):
+        pass
+
+    def test_unicode(self):
+        pass
 
 
 if __name__ == '__main__':
