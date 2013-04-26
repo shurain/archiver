@@ -19,11 +19,79 @@ except ImportError:
 def html2enml(html):
     return ''
 
-def remove_prohibited_elements():
-    return ''
+def remove_prohibited_elements(root):
+    prohibited_elements = [
+    "applet",
+    "base",
+    "basefont",
+    "bgsound",
+    "blink",
+    "body",
+    "button",
+    "dir",
+    "embed",
+    "fieldset",
+    "form",
+    "frame",
+    "frameset",
+    "head",
+    "html",
+    "iframe",
+    "ilayer",
+    "input",
+    "isindex",
+    "label",
+    "layer",  # WAT? Original document say "layer,"
+    "legend",
+    "link",
+    "marquee",
+    "menu",
+    "meta",
+    "noframes",
+    "noscript",
+    "object",
+    "optgroup",
+    "option",
+    "param",
+    "plaintext",
+    "script",
+    "select",
+    "style",
+    "textarea",
+    "xml",
+    ]
+    for node in root.findall('.//*'):
+        if node.tag in prohibited_elements:
+            p = node.getparent()
+            p.remove(node)
 
-def remove_prohibited_attributes():
-    return ''
+    return root
+
+def remove_prohibited_attributes(root):
+    prohibited_attributes = [
+        "id",
+        "class",
+        "onclick",
+        "ondblclick",
+        "accesskey",
+        "data",
+        "dynsrc",
+        "tabindex",
+    ]
+
+    regex_prohibited_attributes = [
+        "on",  # starts with on
+    ]
+
+    # Note that this will change the contents of root node inplace
+    for node in root.findall('.//*'):
+        for att in prohibited_attributes:
+            if att in node.attrib:
+                node.attrib.pop(att)
+        for att in regex_prohibited_attributes:
+            [node.attrib.pop(k) for k in node.attrib.keys() if k.startswith(att)]
+
+    return root
 
 def sanitize_urls():
     return ''
@@ -39,6 +107,3 @@ def validate_dtd(html, f):
 
 def add_styles():
     return ''
-
-if __name__ == '__main__':
-    validate_dtd("<foo/>")
