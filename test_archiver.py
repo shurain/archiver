@@ -9,7 +9,7 @@ except ImportError:
 
 from archiver.item import PinboardItem
 from archiver.source import PinboardSource
-from archiver import sink
+from archiver.sink import EvernoteSink
 from archiver.transformer import DiffbotTransformer
 from archiver.fetcher import URLFetcher
 from archiver.settings import *
@@ -50,8 +50,6 @@ class TestPinboardSource(unittest.TestCase):
 
             self.assertEquals(bookmarks[0].url, "http://estima.wordpress.com/2013/04/25/axon")
 
-class TestEvernoteSink(unittest.TestCase):
-    pass
 
 class TestDiffbotTransformer(unittest.TestCase):
     def setUp(self):
@@ -69,6 +67,7 @@ class TestDiffbotTransformer(unittest.TestCase):
                 'https://www.diffbot.com/api/article?token={}&url=http://httpbin.org/'.format(DIFFBOT_TOKEN))
 
     def test_extract_body(self):
+        #FIXME makes actual connection
         json_result = self.diffbot.extract(self.url)
         self.assertEquals(json_result, self.json_result)
 
@@ -81,6 +80,7 @@ class TestDiffbotTransformer(unittest.TestCase):
                 'https://www.diffbot.com/api/article?token={}&url=http://httpbin.org/&html'.format(DIFFBOT_TOKEN))
 
     def test_extract_body_html(self):
+        #FIXME makes actual connection
         json_result = self.diffbot.extract(self.url, html=True)
         self.assertEquals(json_result, self.json_html_result)
 
@@ -97,19 +97,49 @@ class TestURLFetcher(unittest.TestCase):
             self.assertTrue(requests_get.called)
 
     def test_pdf_fetch(self):
+        #FIXME makes actual connection
         resource = URLFetcher(self.pdf_url)
         self.assertTrue(resource.is_PDF())
 
     def test_html_fetch(self):
+        #FIXME makes actual connection
         resource = URLFetcher(self.html_url)
         self.assertFalse(resource.is_PDF())
         self.assertTrue(resource.is_HTML())
 
     def test_size_limit(self):
+        #FIXME makes actual connection
         resource = URLFetcher(self.pdf_url)
         # This raises error if we forgot to cast the 'content-length' header to int
         # '104' > 100 * 2**10 * 2**10
         resource.fetch()
+
+
+class TestItem(unittest.TestCase):
+    pass
+
+
+class TestEvernoteSink(unittest.TestCase):
+    def setUp(self):
+        #FIXME Currently writes straight to the real user notebook.
+        #Refer to http://discussion.evernote.com/topic/36108-passwords-and-tokens-on-sandbox/
+        #Need to reset password, revoke OAuth tokens, revoke dev tokens.
+        # self.evernote = EvernoteSink(EVERNOTE_DEVELOPER_TOKEN, sandbox=True)
+        self.evernote = EvernoteSink(EVERNOTE_DEVELOPER_TOKEN)
+
+    def test_connection(self):
+        pass
+
+    def test_create_note(self):
+        created_note = self.evernote.create_note(title="Evernote Test", content="Hello World!")
+
+    def test_push_html(self):
+        item = PinboardItem(url="http://httpbin.org/", title="httpbin", time='2013-04-25T00:00:00Z', body="Hey", tags="tag1 tag2")
+        self.evernote.push(item)
+
+    def test_push_pdf(self):
+        pass
+
 
 class TestArchive(unittest.TestCase):
     pass

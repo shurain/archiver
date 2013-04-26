@@ -29,6 +29,7 @@ Dependency
 - requests
 - lxml
 - simplejson
+- evernote
 - mock (for testing)
 
 Usage
