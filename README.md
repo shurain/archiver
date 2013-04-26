@@ -27,9 +27,10 @@ Dependency
 ----------
 
 - requests
-- lxml
 - simplejson
 - evernote
+- lxml
+- pytidylib
 - mock (for testing)
 
 Usage

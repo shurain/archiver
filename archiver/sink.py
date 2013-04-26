@@ -66,6 +66,7 @@ class EvernoteSink(Sink):
         kwargs = {
             'title': item.title.encode('utf-8', 'xmlcharrefreplace'),
             'content': item.body,
+            'tags': item.tags,
         }
 
         if item.itemtype == 'PDF':

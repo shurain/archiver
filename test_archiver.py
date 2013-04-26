@@ -160,6 +160,8 @@ class TestEvernoteSink(unittest.TestCase):
         self.evernote.push(self.item)
         self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY)
 
+    #FIXME check utf-8 support
+
 
 class TestENMLSanitization(unittest.TestCase):
     # Commented out because it is way too slow. Need a means to cache the DTD object.

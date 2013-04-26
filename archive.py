@@ -18,7 +18,7 @@ from archiver.enml import html2enml
 
 def main():
     pinboard = PinboardSource(PINBOARD_API_TOKEN)
-    datestr = '2013-04-25T00:00:00Z'
+    datestr = '2013-04-26T00:00:00Z'
 
     bookmarks = pinboard.fetch_from_date(datestr)
 
@@ -49,6 +49,12 @@ def main():
                 logging.error("Reason: {}".format(e))
                 logging.error("Degrading to using text summary")
                 item.content = json_object['text']
+                # Check for default tags
+                if not item.tags:
+                    # FIXME check for excluded tags
+                    # FIXME fetch tags from diffbot
+                    pass
+
 
         items.append(item)
 
