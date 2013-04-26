@@ -137,9 +137,9 @@ class TestEvernoteSink(unittest.TestCase):
 
     def test_push_html(self):
         item = PinboardItem(url="http://httpbin.org/", title="httpbin", time='2013-04-25T00:00:00Z', body="Hey", tags="tag1 tag2")
-        self.evernote.note_store = mock.MagicMock()        
+        self.evernote.create_note = mock.MagicMock()        
         self.evernote.push(item)
-        self.assertTrue(self.evernote.note_store.createNote.called)
+        self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY)
 
     def test_push_pdf(self):
         pass

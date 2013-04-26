@@ -8,6 +8,7 @@ class PinboardItem(Item):
         self.time = time
         self.body = body
         self.tags = tags
+        self.itemtype = 'pinboard'
 
     def __str__(self):
         return self.url
@@ -21,6 +22,7 @@ class PDFItem(Item):
         pdfitem.time = item.time
         pdfitem.body = item.body
         pdfitem.tags = item.tags
+        pdfitem.itemtype = 'PDF'
         return pdfitem
 
 class HTMLItem(Item):
@@ -32,4 +34,5 @@ class HTMLItem(Item):
         htmlitem.time = item.time
         htmlitem.body = item.body
         htmlitem.tags = item.tags
+        htmlitem.itemtype = 'HTML'
         return htmlitem 

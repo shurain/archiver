@@ -63,7 +63,21 @@ class EvernoteSink(Sink):
         return created_note
 
     def push(self, item):
-        pass
+        if item.itemtype == 'PDF':
+            pass
+        elif item.itemtype == 'HTML':
+            pass
+        else:
+            # XXX Assuming plaintext type        
+            # Should I raise exception for unknown items?
+            item.itemtype = 'text'
+
+        kwargs = {
+            'title': item.title,
+            'content': item.body,
+        }
+
+        self.create_note(**kwargs)
 
 class Database(Sink):
     pass
