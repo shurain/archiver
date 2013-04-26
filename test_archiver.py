@@ -6,12 +6,14 @@ try:
     import simplejson as json
 except ImportError:
     import json
+from StringIO import StringIO
 
-from archiver.item import PinboardItem
+from archiver.item import PinboardItem, HTMLItem, PDFItem
 from archiver.source import PinboardSource
 from archiver.sink import EvernoteSink
 from archiver.transformer import DiffbotTransformer
 from archiver.fetcher import URLFetcher
+from archiver.enml import validate_dtd
 from archiver.settings import *
 
 
@@ -126,6 +128,7 @@ class TestEvernoteSink(unittest.TestCase):
         #Need to reset password, revoke OAuth tokens, revoke dev tokens.
         # self.evernote = EvernoteSink(EVERNOTE_DEVELOPER_TOKEN, sandbox=True)
         self.evernote = EvernoteSink(EVERNOTE_DEVELOPER_TOKEN)
+        self.item = PinboardItem(url="http://httpbin.org/", title="httpbin", time='2013-04-25T00:00:00Z', body="Hey", tags="tag1 tag2")
 
     def test_connection(self):
         pass
@@ -135,18 +138,41 @@ class TestEvernoteSink(unittest.TestCase):
         created_note = self.evernote.create_note(title="Evernote Test", content="Hello World!")
         self.assertTrue(self.evernote.note_store.createNote.called)
 
-    def test_push_html(self):
-        item = PinboardItem(url="http://httpbin.org/", title="httpbin", time='2013-04-25T00:00:00Z', body="Hey", tags="tag1 tag2")
+    def test_push_arbitrary_item(self):
         self.evernote.create_note = mock.MagicMock()        
-        self.evernote.push(item)
+        self.evernote.push(self.item)
         self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY)
 
-    def test_push_pdf(self):
-        pass
+    def test_push_html_item(self):
+        #FIXME test for HTML specifics
+        item = HTMLItem.from_pinboard_item(self.item)
+        self.evernote.create_note = mock.MagicMock()        
+        self.evernote.push(self.item)
+        self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY)
+
+    def test_push_pdf_item(self):
+        #FIXME test for PDF specifics
+        item = PDFItem.from_pinboard_item(self.item)
+        self.evernote.create_note = mock.MagicMock()        
+        self.evernote.push(self.item)
+        self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY)
+
+
+class TestENMLSanitization(unittest.TestCase):
+    def setUp(self):
+        with open("archiver/enml2.dtd", 'r') as f:
+            dtd = f.read()
+        self.f = StringIO(dtd)
+
+    def test_validation_against_dtd(self):
+        # FIXME this is freakishly slow
+        self.assertTrue(validate_dtd("<a></a>", self.f))
+        self.assertFalse(validate_dtd("<form></form>", self.f))
 
 
 class TestArchive(unittest.TestCase):
     pass
+
 
 if __name__ == '__main__':
     unittest.main()

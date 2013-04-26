@@ -63,19 +63,22 @@ class EvernoteSink(Sink):
         return created_note
 
     def push(self, item):
+        kwargs = {
+            'title': item.title,
+            'content': item.body,
+        }
+
         if item.itemtype == 'PDF':
+            #FIXME create pdf resource
             pass
         elif item.itemtype == 'HTML':
-            pass
+            #FIXME check for image inside and create image resources
+            kwargs['content'] = item.content
         else:
             # XXX Assuming plaintext type        
             # Should I raise exception for unknown items?
             item.itemtype = 'text'
 
-        kwargs = {
-            'title': item.title,
-            'content': item.body,
-        }
 
         self.create_note(**kwargs)
 

@@ -35,10 +35,10 @@ def main():
 
         items.append(item)
 
-    # evernote = EvernoteSink(EVERNOTE_DEVELOPER_TOKEN)
+    evernote = EvernoteSink(EVERNOTE_DEVELOPER_TOKEN)
     for item in items:
-        print item.content[:20]
-    #     evernote.push(item)
+        # print item.content[:20]
+        evernote.push(item)
 
 
 if __name__ == '__main__':
