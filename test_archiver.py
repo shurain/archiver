@@ -131,11 +131,15 @@ class TestEvernoteSink(unittest.TestCase):
         pass
 
     def test_create_note(self):
+        self.evernote.note_store = mock.MagicMock()        
         created_note = self.evernote.create_note(title="Evernote Test", content="Hello World!")
+        self.assertTrue(self.evernote.note_store.createNote.called)
 
     def test_push_html(self):
         item = PinboardItem(url="http://httpbin.org/", title="httpbin", time='2013-04-25T00:00:00Z', body="Hey", tags="tag1 tag2")
+        self.evernote.note_store = mock.MagicMock()        
         self.evernote.push(item)
+        self.assertTrue(self.evernote.note_store.createNote.called)
 
     def test_push_pdf(self):
         pass
