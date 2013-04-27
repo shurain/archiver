@@ -63,15 +63,15 @@ class EvernoteSink(Sink):
         return resource
 
     def note_attribute(self, source_url=''):
-        attribute = Types.NoteAttributes()
-        attribute.sourceURL = source_url
-        return attribute
+        attributes = Types.NoteAttributes()
+        attributes.sourceURL = source_url
+        return attributes 
 
-    def create_note(self, title, content, notebook_name='', tags='', attribute=None, resources=None):
+    def create_note(self, title, content, notebook_name='', tags='', attributes=None, resources=None):
         note = Types.Note()
         note.title = title
-        if attribute:
-            note.attribute = attribute
+        if attributes:
+            note.attributes =attributes 
         if tags:
             note.tagNames = tags.split()  # Assuming no spaces in tags
 
@@ -106,6 +106,7 @@ class EvernoteSink(Sink):
             'content': item.body,
             'tags': item.tags,
             'notebook_name': EVERNOTE_NOTEBOOK,
+            'attributes': self.note_attribute(item.url),
         }
 
         if item.itemtype == 'PDF':
