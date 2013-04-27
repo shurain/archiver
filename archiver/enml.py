@@ -35,6 +35,9 @@ def html2enml(html):
 
     root = fromstring(doc)
 
+    # XXX dirty hack to circumvent a bug in lxml parser
+    root = fromstring(etree.tostring(root))
+
     # tidy_document returns a valid html document which means it contains html tag and proper body element
     root = root.find('body')
     root.tag = 'div'

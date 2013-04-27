@@ -10,6 +10,7 @@ except ImportError:
     import json
 from StringIO import StringIO
 from lxml import etree
+from lxml.html import fromstring
 from itertools import chain
 
 
@@ -218,6 +219,29 @@ class TestENMLSanitization(unittest.TestCase):
         data = """<div><h2>Introduction<\/h2><p>Conditional random field는 (CRF) 레이블의 인접성에 대한 정보를 바탕으로 레이블을 추측하는 기계학습 기법이다.\nCRF를 활용하여 여러 가지 재미있는 것들을 할 수 있는데, 이를 활용하는 방법에 대해 이야기하겠다. <a href=\"http:\/\/blog.shurain.net\/2013\/04\/crf.html\"><span id=\"ref1\">[1]<\/span><\/a><\/p><p>하지만 그래도 CRF가 어떤 식으로 동작하는 지 대충은 알아야 하니 대략적인 설명을 해보도록 하자.\n보통 품사 태깅을 (Part-of-speech tagging) 예로 많이 드니, 이를 예로 들도록 하겠다. <a href=\"http:\/\/blog.shurain.net\/2013\/04\/crf.html\"><span id=\"ref2\">[2]<\/span><\/a><\/p><h2>Part-of-Speech Tagging<\/h2><p>다음과 같은 문장이 주어졌다고 가정하자. <\/p><blockquote>\n<p>\"Bob drank coffee at Starbucks\"<\/p>\n<\/blockquote><p>각 단어에 품사를 붙여보면 다음과 같다.<\/p><blockquote>\n<p>\"NOUN VERB NOUN PREPOSITION NOUN\"<\/p>\n<\/blockquote><p>전통적인 supervised learning 기법을 적용한다고 생각해보면 트레이닝 데이터가 있을 것이고\n데이터로부터 의미 있는 특징을 (feature) 뽑아내는 과정이 있을 것이다.<\/p><p>CRF에서는 특징 함수를 (feature function) 정의하여 사용한다.\n특징 함수는 문장과 해당 문장을 구성하는 단어들의 위치 및 레이블 정보를 입력으로 받아서 어떤 실수를 (주로 0, 1) 출력하게 된다. \n각 특징 함수는 개별적인 가중치를 갖는데, 결국 어떤 문장이 주어지면 어떤 레이블이 얼마나 적합한 레이블인지를 weighted feature sum으로 계산하게 된다.<\/p><p>특징 함수의 장점은 임의의 특징을 표현하는 것이 가능하다는 점이다.\n몇 가지 특징 함수의 예를 들어보면 다음과 같다.<\/p><ul>\n<li>만약 i 번 레이블이 ADVERB 이고 \"-ly\"로 해당 단어가 끝나면 1, 아니면 0을 리턴하는 함수<\/li>\n<li>만약 i 번 레이블이 VERB 이고 문장이 물음표로 끝나면 1, 아니면 0을 리턴하는 함수<\/li>\n<li>만약 i-1 번 레이블이 ADJECTIVE이고 i번 레이블이 NOUN이면 1, 아니면 0을 리턴하는 함수<\/li>\n<\/ul><p>보는 바와 같이 특징 함수는 매우 자유로운 형태를 띌 수 있다.\nCRF는 이처럼 자유롭게 특징 함수를 만들고, 각각의 특징 함수에 가중치를 부여하고 그 합을 구해서 사용하게 된다.\n최종적으로 문장이 주어졌을 때, 특정한 레이블이 얼마나 그럴싸한지는 해당 레이블의 점수를 (weighted feature sum) 모든 가능한 레이블의 점수로 나눠주면 된다.<\/p><p>가중치를 어떤 식으로 학습하는지, 다른 종류의 더 복잡한 CRF에 대한 설명은 생략하기로 하고 이런 CRF를 어떻게 다른 용도로 활용하는 것이 가능한지 살펴보자.<\/p><h2>Different Uses<\/h2><p>CRF는 특징 함수를 매우 자유롭게 설정할 수 있기 때문에 다른 유용한 것들을 할 수 있다.\n가령 띄어쓰기가 되어 있지 않은 문장을 자동으로 띄어쓰기 해주는 것이 가능하다.\n어떤 문장이 주어졌을 때, 레이블로 각 문자마다 여기서 띄어쓰기를 해야 하는지 아닌지 정보를 0\/1로 주는 것을 상상할 수 있다.\n가령, <\/p><blockquote>\n<p>CRF로띄어쓰기를해보자<\/p>\n<\/blockquote><p>라는 문장이 주어진 경우, 올바른 형태는<\/p><blockquote>\n<p>CRF로_띄어쓰기를_해보자<\/p>\n<\/blockquote><p>일 것이다. 여기에 레이블을 붙여보면, <\/p><blockquote>\n<p>C\/0 <br><\/br>\nR\/0 <br><\/br>\nF\/0 <br><\/br>\n로\/1 <br><\/br>\n띄\/0 <br><\/br>\n어\/0 <br><\/br>\n쓰\/0 <br><\/br>\n기\/0 <br><\/br>\n를\/1 <br><\/br>\n해\/0 <br><\/br>\n보\/0 <br><\/br>\n자\/1 <br><\/br><\/p>\n<\/blockquote><p>정도로 붙여보는 것이 가능하다.\n이런 식으로 레이블이 붙어 있을 때, 이로부터 유용한 띄어쓰기 정보를 뽑아내는 특징 함수만 만들어 주면 CRF를 사용해서 이를 학습할 수 있다.\n가령 어떤 문자가 나타난 경우 그 앞의 문자와의 관계 등을 특징 함수에 넣어주는 것을 쉽게 상상할 수 있다.\n한국어 위키피디아 등의 데이터를 활용하면 쉽게 트레이닝 데이터를 만들 수 있고, 바로 CRF로 학습을 하면 끝이다. <a href=\"http:\/\/blog.shurain.net\/2013\/04\/crf.html\"><span id=\"ref3\">[3]<\/span><\/a><\/p><p><\/p><p><\/p><p><\/p><\/div>"""
         html2enml(data)
 
+    def test_weird(self):
+        doc = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml">  <head>    <title></title>  </head>  <body><a id="bottom" name="bottom"></a></body></html>"""
+        root = fromstring(doc)
+        problem = root.findall('.//*')[-1]
+        before = etree.tostring(problem)
+        problem.attrib.pop('id')
+        after = etree.tostring(problem)
+        # before is '<a id="bottom" name="bottom"></a>'
+        # after is '<a name="bottom" id="bottom"></a>'
+        # pop('id') just changed the order of attributes
+        self.assertNotEqual(before, after)
+
+        # Only the order of "id" and "name" attribute for "a" element is different from doc
+        doc2 = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml">  <head>    <title></title>  </head>  <body><a name="bottom" id="bottom"></a></body></html>"""
+        root = fromstring(doc2)
+        # hack to circumvent the bug in lxml parser
+        root = fromstring(etree.tostring(root))
+
+        problem = root.findall('.//*')[-1]
+        before = etree.tostring(problem)
+        problem.attrib.pop('id')
+        after = etree.tostring(problem)
+        self.assertNotEqual(before, after)
 
 class TestArchive(unittest.TestCase):
     def setUp(self):
