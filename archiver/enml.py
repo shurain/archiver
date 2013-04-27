@@ -21,7 +21,9 @@ import logging
 
 
 def html2enml(html):
-    doc, err= tidy_fragment(
+    # doc, err = tidy_fragment(
+
+    doc, err = tidy_document(
         html,
         options={
             "output-xhtml": 1,
@@ -32,13 +34,15 @@ def html2enml(html):
     )
 
     root = fromstring(doc)
-    # root = fromstring(html)
+
+    # tidy_document returns a valid html document which means it contains html tag and proper body element
+    root = root.find('body')
+    root.tag = 'div'
+
     root = remove_prohibited_elements(root)
     root = remove_prohibited_attributes(root)
-    # Skipping dtd validation
+    #FIXME Skipping dtd validation because of slow DTD creation speed
     # validate_dtd(html, f):
-    root.tag = 'div'
-    # logging.debug(root)
 
     return etree.tostring(root)
 
