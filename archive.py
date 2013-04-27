@@ -18,7 +18,7 @@ from archiver.enml import html2enml
 
 def main():
     pinboard = PinboardSource(PINBOARD_API_TOKEN)
-    datestr = '2013-04-26T04:00:00Z'
+    datestr = '2013-04-27T00:00:00Z'
 
     bookmarks = pinboard.fetch_from_date(datestr)
 
@@ -35,7 +35,7 @@ def main():
 
         if resource.is_PDF():
             item = PDFItem.from_pinboard_item(bookmark)
-            item.content = 'PDF CONTENT'
+            item.content = resource.fetch()  #FIXME this could take very long. Need a way to address this problem.
         elif resource.is_HTML():
             item = HTMLItem.from_pinboard_item(bookmark)
             json_result = diffbot.extract(item.url, html=True)

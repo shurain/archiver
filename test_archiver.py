@@ -159,6 +159,7 @@ class TestEvernoteSink(unittest.TestCase):
         self.evernote.create_note = mock.MagicMock()        
         self.evernote.push(self.item)
         self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY)
+        #FIXME check for hash values
 
     #FIXME check utf-8 support
 

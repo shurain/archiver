@@ -1,3 +1,6 @@
+import hashlib
+import binascii
+
 from thrift.transport.THttpClient import THttpClient
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 from evernote.edam.userstore import UserStore
@@ -6,6 +9,8 @@ import evernote.edam.type.ttypes as Types
 import evernote.edam.error.ttypes as Errors
 
 from evernote.api.client import EvernoteClient
+
+import logging
 
 class Sink(object):
     pass
@@ -24,8 +29,21 @@ class EvernoteSink(Sink):
     def image_resource(self):
         pass
 
-    def pdf_resource(self):
-        pass
+    def pdf_resource(self, item):
+        #FIXME create pdf resource
+        md5 = hashlib.md5()
+        md5.update(item.content)
+        hashvalue = md5.digest()
+
+        data = Types.Data()
+        data.size = len(item.content)  #FIXME better ways of doing this calculation?
+        data.bodyHash = hashvalue
+        data.body = item.content
+
+        resource = Types.Resource()
+        resource.mime = 'application/pdf'
+        resource.data = data
+        return resource
 
     def note_attribute(self, source_url=''):
         attribute = Types.NoteAttributes()
@@ -54,10 +72,13 @@ class EvernoteSink(Sink):
         <en-note>{}""".format(content.encode('ascii', 'xmlcharrefreplace'))
 
         if resources:
-            #FIXME
-            pass
+            note.resources = resources
+            for r in resources:
+                note.content += """<en-media type="{}" hash="{}"/>""".format(r.mime, binascii.hexlify(r.data.bodyHash))
 
         note.content += "</en-note>"
+
+        logging.debug(note.content)
 
         created_note = self.note_store.createNote(self.token, note)
         return created_note
@@ -70,8 +91,9 @@ class EvernoteSink(Sink):
         }
 
         if item.itemtype == 'PDF':
-            #FIXME create pdf resource
-            pass
+            resource = self.pdf_resource(item)
+            kwargs['resources'] = [resource]
+
         elif item.itemtype == 'HTML':
             #FIXME check for image inside and create image resources
             kwargs['content'] = item.content
