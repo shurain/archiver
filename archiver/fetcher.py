@@ -50,6 +50,17 @@ class URLFetcher(object):
         else:
             return False
 
+    def is_text(self):
+        """Check if the resource is a plain text.
+
+        Just checks the content-type of the response header.
+        """
+        if self.content_type == 'text/plain':
+            return True
+        else:
+            return False
+
+
     def fetch(self):
         """Fetch the resource content.
 

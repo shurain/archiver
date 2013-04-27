@@ -50,3 +50,15 @@ class HTMLItem(Item):
         htmlitem.tags = item.tags
         htmlitem.itemtype = 'HTML'
         return htmlitem 
+
+class TextItem(Item):
+    @classmethod
+    def from_pinboard_item(cls, item):
+        textitem = cls()
+        textitem.url = item.url
+        textitem.title = item.title
+        textitem.time = item.time
+        textitem.body = item.body
+        textitem.tags = item.tags
+        textitem.itemtype = 'text'
+        return textitem 

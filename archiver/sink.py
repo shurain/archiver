@@ -12,6 +12,8 @@ import evernote.edam.error.ttypes as Errors
 
 from evernote.api.client import EvernoteClient
 
+from .settings import EVERNOTE_NOTEBOOK
+
 import logging
 
 class Sink(object):
@@ -75,7 +77,7 @@ class EvernoteSink(Sink):
 
         if notebook_name:
             notebooks = self.note_store.listNotebooks(self.token)
-            for note in notebooks:
+            for notebook in notebooks:
                 if notebook.name == notebook_name:
                     note.notebookGuid = notebook.guid
                     break
@@ -103,6 +105,7 @@ class EvernoteSink(Sink):
             'title': item.title.encode('utf-8', 'xmlcharrefreplace'),
             'content': item.body,
             'tags': item.tags,
+            'notebook_name': EVERNOTE_NOTEBOOK,
         }
 
         if item.itemtype == 'PDF':
@@ -111,9 +114,18 @@ class EvernoteSink(Sink):
         elif item.itemtype == 'image':
             resource = self.image_resource(item)
             kwargs['resources'] = [resource]
-        elif item.itemtype == 'HTML':
+        elif item.itemtype == 'HTML' or item.itemtype == 'text':
             #FIXME check for image inside and create image resources
             kwargs['content'] = item.content
+        #FIXME handle plain text properly.
+        # Evernote documentation suggests the following
+        # Applications that wish to store plaintext notes in Evernote must convert newlines into HTML-style blocks.
+        # To ensure that notes render correctly across clients, we recommend that you wrap each paragraph in a <div> element. 
+        # For each blank line, insert a <div> containing a single <br>. 
+        
+        # elif item.itemtype == 'text':
+        #     content = item.body.split('\n')
+        #     kwargs['content'] = ''.join(['<div>' + body + '</div>' for body in content])
         else:
             # XXX Assuming plaintext type        
             # Should I raise exception for unknown items?

@@ -150,24 +150,29 @@ class TestEvernoteSink(unittest.TestCase):
         created_note = self.evernote.create_note(title="Evernote Test", content="Hello World!")
         self.assertTrue(self.evernote.note_store.createNote.called)
 
+    def test_create_note_with_notebook(self):
+        self.evernote.note_store = mock.MagicMock()        
+        created_note = self.evernote.create_note(title="Evernote Test", content="Hello World!", notebook_name="test notebook")
+        self.assertTrue(self.evernote.note_store.createNote.called)
+
     def test_push_arbitrary_item(self):
         self.evernote.create_note = mock.MagicMock()        
         self.evernote.push(self.item)
-        self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY, tags=mock.ANY)
+        self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY, tags=mock.ANY, notebook_name=mock.ANY)
 
     def test_push_html_item(self):
         #FIXME test for HTML specifics
         item = HTMLItem.from_pinboard_item(self.item)
         self.evernote.create_note = mock.MagicMock()        
         self.evernote.push(self.item)
-        self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY, tags=mock.ANY)
+        self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY, tags=mock.ANY, notebook_name=mock.ANY)
 
     def test_push_pdf_item(self):
         #FIXME test for PDF specifics
         item = PDFItem.from_pinboard_item(self.item)
         self.evernote.create_note = mock.MagicMock()        
         self.evernote.push(self.item)
-        self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY, tags=mock.ANY)
+        self.evernote.create_note.assert_called_once_with(content=mock.ANY, title=mock.ANY, tags=mock.ANY, notebook_name=mock.ANY)
         #FIXME check for hash values
 
     #FIXME check utf-8 support

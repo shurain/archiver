@@ -20,7 +20,7 @@ from archiver.settings import PINBOARD_API_TOKEN, EVERNOTE_DEVELOPER_TOKEN, DIFF
 from archiver.enml import html2enml
 from archiver.database import PinboardDatabase
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def main():
@@ -54,10 +54,11 @@ def main():
             item = ImageItem.from_pinboard_item(bookmark)
             item.content_type = resource.content_type
             item.content = resource.fetch()
-        elif resource.is_HTML():
+        elif resource.is_HTML() or resource.is_text():
             item = HTMLItem.from_pinboard_item(bookmark)
             json_result = diffbot.extract(item.url, html=True)
             json_object = json.loads(json_result)
+            
             try:
                 item.content = html2enml(json_object['html'])
             except (etree.XMLSyntaxError, KeyError) as e:
@@ -67,6 +68,7 @@ def main():
                 logging.error("Reason: {}".format(e))
                 logging.error("Degrading to using text summary")
                 item.content = json_object['text']
+
             # Check for default tags
             # FIXME seemingly random criteria for checking tags
             if not item.tags or (item.tags.lower() == 'unread' and len(item.tags.split()) == 1):
@@ -74,6 +76,8 @@ def main():
                 if 'tags' in json_object:
                     # autotag tells that this was autotagged.
                     item.tags = 'autotag ' + ' '.join(('_'.join(x.split()) for x in json_object['tags']))  # diffbot tags
+        else:
+            logging.warn("Unknown content-type of {}".format(resource.content_type))
 
         evernote.push(item)
         pinboard_db.last_updated = item.time
