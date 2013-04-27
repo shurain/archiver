@@ -41,19 +41,16 @@ def main():
         conn.commit()
         c.execute("SELECT * FROM pinboard")
         res = c.fetchone()
+    pid, datestr = res  # 0 contains the index "1"
 
     pinboard = PinboardSource(PINBOARD_API_TOKEN)
-    datestr = res[1]  # 0 contains the index "1"
+    diffbot = DiffbotTransformer(DIFFBOT_TOKEN)
+    evernote = EvernoteSink(EVERNOTE_DEVELOPER_TOKEN)
 
     logging.info("Fetching data from {}".format(datestr))
 
     bookmarks = pinboard.fetch_from_date(datestr)
     # bookmarks = pinboard.fetch_from_url("http://i.imgur.com/4n92M.jpg")
-
-    # Hold the data fetch time
-    c.execute("UPDATE pinboard set last_updated = ? where id = 1", (datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),))
-
-    diffbot = DiffbotTransformer(DIFFBOT_TOKEN)
 
     items = []
     for bookmark in reversed(bookmarks):
@@ -87,19 +84,24 @@ def main():
                 logging.error("Degrading to using text summary")
                 item.content = json_object['text']
             # Check for default tags
+            # FIXME seemingly random criteria for checking tags
             if not item.tags or (item.tags.lower() == 'unread' and len(item.tags.split()) == 1):
-                # FIXME seemingly random criteria for checking tags
-                # autotag tells that this was autotagged.
-                item.tags = 'autotag ' + ' '.join(('_'.join(x.split()) for x in json_object['tags']))  # diffbot tags
+                # Diffbot will not contain tags key even if explicitly told to return tags if it does not find any
+                if 'tags' in json_object:
+                    # autotag tells that this was autotagged.
+                    item.tags = 'autotag ' + ' '.join(('_'.join(x.split()) for x in json_object['tags']))  # diffbot tags
 
-        items.append(item)
-
-    evernote = EvernoteSink(EVERNOTE_DEVELOPER_TOKEN)
-    for item in items:
         evernote.push(item)
+        c.execute("UPDATE pinboard set last_updated = ? where id = 1", (item.time,))
+        conn.commit()
 
+        # items.append(item)
+
+    # for item in items:
+    #     evernote.push(item)
+
+    # Hold the data fetch time
     # Commit the holded timestamp
-    conn.commit()
     conn.close()
 
 if __name__ == '__main__':
