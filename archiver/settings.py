@@ -16,4 +16,5 @@ DIFFBOT_TOKEN = ""
 
 # Path to SQLite database file
 # Used for tracking update times, etc.
+# DATABASE_PATH = "/PATH/TO/DATABASE/FILE/example.db"
 DATABASE_PATH = ""
