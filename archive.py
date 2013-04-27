@@ -18,30 +18,14 @@ from archiver.transformer import DiffbotTransformer
 from archiver.item import Item, HTMLItem, PDFItem, ImageItem
 from archiver.settings import PINBOARD_API_TOKEN, EVERNOTE_DEVELOPER_TOKEN, DIFFBOT_TOKEN, DATABASE_PATH
 from archiver.enml import html2enml
+from archiver.database import PinboardDatabase
 
 logging.basicConfig(level=logging.DEBUG)
 
 
 def main():
-    conn = sqlite3.connect(DATABASE_PATH)
-    c = conn.cursor()
-
-    try:
-        c.execute("SELECT * FROM pinboard")
-    except sqlite3.OperationalError as e:
-        # no such table
-        logging.warn(e)
-        c.execute("CREATE TABLE pinboard (id INTEGER PRIMARY KEY, last_updated TEXT)")
-
-    c.execute("SELECT * FROM pinboard")
-    res = c.fetchone()
-
-    if res is None:
-        c.execute("INSERT INTO pinboard VALUES (NULL, ?)", ('1970-01-01T00:00:00Z', ))  # beginning of time
-        conn.commit()
-        c.execute("SELECT * FROM pinboard")
-        res = c.fetchone()
-    pid, datestr = res  # 0 contains the index "1"
+    pinboard_db = PinboardDatabase()
+    datestr = pinboard_db.last_updated
 
     pinboard = PinboardSource(PINBOARD_API_TOKEN)
     diffbot = DiffbotTransformer(DIFFBOT_TOKEN)
@@ -92,17 +76,10 @@ def main():
                     item.tags = 'autotag ' + ' '.join(('_'.join(x.split()) for x in json_object['tags']))  # diffbot tags
 
         evernote.push(item)
-        c.execute("UPDATE pinboard set last_updated = ? where id = 1", (item.time,))
-        conn.commit()
+        pinboard_db.last_updated = item.time
 
-        # items.append(item)
+    pinboard_db.close()
 
-    # for item in items:
-    #     evernote.push(item)
-
-    # Hold the data fetch time
-    # Commit the holded timestamp
-    conn.close()
 
 if __name__ == '__main__':
     main()
