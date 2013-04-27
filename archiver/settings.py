@@ -13,3 +13,7 @@ EVERNOTE_DEVELOPER_TOKEN = ""
 # http://www.diffbot.com
 # DIFFBOT_TOKEN = "STRING"
 DIFFBOT_TOKEN = ""
+
+# Path to SQLite database file
+# Used for tracking update times, etc.
+DATABASE_PATH = ""
