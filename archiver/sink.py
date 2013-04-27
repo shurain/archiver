@@ -114,7 +114,7 @@ class EvernoteSink(Sink):
         elif item.itemtype == 'image':
             resource = self.image_resource(item)
             kwargs['resources'] = [resource]
-        elif item.itemtype == 'HTML' or item.itemtype == 'text':
+        elif item.itemtype == 'HTML':
             #FIXME check for image inside and create image resources
             kwargs['content'] = item.content
         #FIXME handle plain text properly.
@@ -123,9 +123,8 @@ class EvernoteSink(Sink):
         # To ensure that notes render correctly across clients, we recommend that you wrap each paragraph in a <div> element. 
         # For each blank line, insert a <div> containing a single <br>. 
         
-        # elif item.itemtype == 'text':
-        #     content = item.body.split('\n')
-        #     kwargs['content'] = ''.join(['<div>' + body + '</div>' for body in content])
+        elif item.itemtype == 'text':
+            kwargs['content'] = item.content
         else:
             # XXX Assuming plaintext type        
             # Should I raise exception for unknown items?
