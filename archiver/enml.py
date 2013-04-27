@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 HTML to ENML Converter
 
