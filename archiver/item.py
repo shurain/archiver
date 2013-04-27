@@ -15,6 +15,18 @@ class PinboardItem(Item):
     def __str__(self):
         return self.url
 
+class ImageItem(Item):
+    @classmethod
+    def from_pinboard_item(cls, item):
+        imageitem = cls()
+        imageitem.url = item.url
+        imageitem.title = item.title
+        imageitem.time = item.time
+        imageitem.body = item.body
+        imageitem.tags = item.tags
+        imageitem.itemtype = 'image'
+        return imageitem 
+
 class PDFItem(Item):
     @classmethod
     def from_pinboard_item(cls, item):

@@ -13,7 +13,7 @@ from archiver.source import PinboardSource
 from archiver.sink import EvernoteSink
 from archiver.fetcher import URLFetcher
 from archiver.transformer import DiffbotTransformer
-from archiver.item import HTMLItem, PDFItem
+from archiver.item import HTMLItem, PDFItem, ImageItem
 from archiver.settings import PINBOARD_API_TOKEN, EVERNOTE_DEVELOPER_TOKEN, DIFFBOT_TOKEN
 from archiver.enml import html2enml
 
@@ -22,7 +22,8 @@ def main():
     pinboard = PinboardSource(PINBOARD_API_TOKEN)
     datestr = '2013-04-27T00:00:00Z'
 
-    bookmarks = pinboard.fetch_from_date(datestr)
+    # bookmarks = pinboard.fetch_from_date(datestr)
+    bookmarks = pinboard.fetch_from_url("http://i.imgur.com/4n92M.jpg")
 
     diffbot = DiffbotTransformer(DIFFBOT_TOKEN)
 
@@ -38,6 +39,10 @@ def main():
         if resource.is_PDF():
             item = PDFItem.from_pinboard_item(bookmark)
             item.content = resource.fetch()  #FIXME this could take very long. Need a way to address this problem.
+        elif resource.is_image():
+            item = ImageItem.from_pinboard_item(bookmark)
+            item.content_type = resource.content_type
+            item.content = resource.fetch()
         elif resource.is_HTML():
             item = HTMLItem.from_pinboard_item(bookmark)
             json_result = diffbot.extract(item.url, html=True)

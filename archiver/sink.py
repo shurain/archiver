@@ -28,8 +28,21 @@ class EvernoteSink(Sink):
         self.user_store = self.client.get_user_store()
         self.note_store = self.client.get_note_store()
 
-    def image_resource(self):
-        pass
+    def image_resource(self, item):
+        #FIXME create pdf resource
+        md5 = hashlib.md5()
+        md5.update(item.content)
+        hashvalue = md5.digest()
+
+        data = Types.Data()
+        data.size = len(item.content)  #FIXME better ways of doing this calculation?
+        data.bodyHash = hashvalue
+        data.body = item.content
+
+        resource = Types.Resource()
+        resource.mime = item.content_type
+        resource.data = data
+        return resource
 
     def pdf_resource(self, item):
         #FIXME create pdf resource
@@ -95,7 +108,9 @@ class EvernoteSink(Sink):
         if item.itemtype == 'PDF':
             resource = self.pdf_resource(item)
             kwargs['resources'] = [resource]
-
+        elif item.itemtype == 'image':
+            resource = self.image_resource(item)
+            kwargs['resources'] = [resource]
         elif item.itemtype == 'HTML':
             #FIXME check for image inside and create image resources
             kwargs['content'] = item.content

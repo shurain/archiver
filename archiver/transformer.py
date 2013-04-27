@@ -13,6 +13,7 @@ class DiffbotTransformer(Transformer):
         self.token = token
 
     def extract(self, url, callback=False, html=False, dontStripAds=False, timeout=False, tags=True, comments=False, summary=True):
+        # XXX Do I even need to specify html? It will only add additional response.
         args = {
             'callback': callback,
             'html': html,
@@ -23,7 +24,8 @@ class DiffbotTransformer(Transformer):
             'summary': summary,
         }
 
-        valid_args = {k: v for (k, v) in args.iteritems() if v}
+        # Adding sorted for the sake of testing
+        valid_args = {k: v for (k, v) in sorted(args.iteritems()) if v}
         url = self.URL + '?token={}&url={}'.format(self.token, url)
         options = '&'.join((k for k in valid_args))
         if options:

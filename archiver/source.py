@@ -41,6 +41,12 @@ class PinboardSource(Source):
 
         return item_list
 
+    def fetch_from_url(self, url):
+        """Fetch the bookmark for specific url.
+        """
+        URL = self.URL + 'posts/get?auth_token={}&url={}'.format(self.token, url)
+        return self.parse_xml(self.grab_xml(URL))
+
     def fetch_from_date(self, datestr):
         """Fetch the bookmarks after the given date string.
         UTC timestamp is used for date string.

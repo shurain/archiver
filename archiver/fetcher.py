@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+A module for fetching resource indicated by a URL.
+"""
+
 import requests
 
 
@@ -16,7 +20,19 @@ class URLFetcher(object):
     def content_type(self):
         return self.response.headers['content-type'].split(';')[0].strip()
 
+    def is_image(self):
+        if self.content_type in ['image/gif', 'image/png', 'image/jpeg']:
+            #FIXME supporting more image types?
+            return True
+        else:
+            return False
+
     def is_PDF(self):
+        """Check if the resource is a PDF document.
+
+        It will try to check the content-type of the response header,
+        and peep the content for magic number indicating the content type.
+        """
         if self.content_type == 'application/pdf':
             return True
         if self.response.content[:4] == '%PDF':
@@ -25,12 +41,21 @@ class URLFetcher(object):
             return False
 
     def is_HTML(self):
+        """Check if the resource is a HTML document.
+
+        Just checks the content-type of the response header.
+        """
         if self.content_type == 'text/html':
             return True
         else:
             return False
 
     def fetch(self):
+        """Fetch the resource content.
+
+        Has a guard to check if the content exceeds the size limit.
+        Size limit can be overrided by settings the SIZELIMIT variable.
+        """
         if int(self.response.headers['content-length']) > self.SIZELIMIT:
             #FIXME create a specific exception
             raise Exception("File too large")
