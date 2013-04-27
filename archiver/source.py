@@ -4,7 +4,7 @@ from lxml import etree
 import requests
 from datetime import datetime
 
-from item import PinboardItem
+from .item import PinboardItem
 
 
 class Source(object):
