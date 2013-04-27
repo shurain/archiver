@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sqlite3
+import logging
 
 from .settings import DATABASE_PATH
 
