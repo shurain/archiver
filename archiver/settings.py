@@ -18,3 +18,6 @@ DIFFBOT_TOKEN = ""
 # Used for tracking update times, etc.
 # DATABASE_PATH = "/PATH/TO/DATABASE/FILE/example.db"
 DATABASE_PATH = ""
+
+# Evernote Notebook name 
+EVERNOTE_NOTEBOOK = 'archiver_test'
