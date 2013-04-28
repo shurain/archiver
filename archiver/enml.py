@@ -38,8 +38,14 @@ def html2enml(html):
     # XXX dirty hack to circumvent a bug in lxml parser
     root = fromstring(etree.tostring(root))
 
-    # tidy_document returns a valid html document which means it contains html tag and proper body element
+    logging.debug(etree.tostring(root))
+
+    # tidy_document returns a valid html document which means it usually contains html tag and proper body element
     root = root.find('body')
+    if root is None:
+        logging.warn("No body on this document")
+        logging.warn(html)
+        return "<div></div>"
     root.tag = 'div'
 
     root = remove_prohibited_elements(root)
