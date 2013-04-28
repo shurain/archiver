@@ -71,9 +71,10 @@ class EvernoteSink(Sink):
         note = Types.Note()
         note.title = title
         if attributes:
-            note.attributes =attributes 
+            note.attributes = attributes 
         if tags:
             note.tagNames = tags.split()  # Assuming no spaces in tags
+            logging.debug(note.tagNames)            
 
         if notebook_name:
             notebooks = self.note_store.listNotebooks(self.token)
