@@ -33,8 +33,9 @@ def main():
 
     logging.info("Fetching data from {}".format(datestr))
 
-    # bookmarks = pinboard.fetch_from_date(datestr)
-    bookmarks = pinboard.fetch_from_url("http://i.imgur.com/4n92M.jpg")
+    bookmarks = pinboard.fetch_from_date(datestr)
+    # bookmarks = pinboard.fetch_from_url("http://i.imgur.com/4n92M.jpg")
+    # bookmarks = pinboard.fetch_from_url("http://neoocean.net/blog/i/entry/%EB%B2%94%EC%A3%84%EC%97%90-%EB%8C%80%ED%95%9C-%ED%8B%80%EB%A6%B0-%EC%98%88%EC%B8%A1#_post_2057")
 
     items = []
     for bookmark in reversed(bookmarks):
@@ -62,13 +63,13 @@ def main():
 
                 if 'error' in json_object:
                     logging.error("Failed to fetch resource at {}".format(item.url))
-                    logging.error("Reason: {}".format(json_object['error']))
+                    logging.error(u"Reason: {}".format(json_object['error']))
                     continue
 
                 if 'statusCode' in json_object:
                     if json_object['statusCode'] == 500:
                         logging.error("Failed to fetch resource at {}".format(item.url))
-                        logging.error("Reason: {}".format(json_object['message']))
+                        logging.error(u"Reason: {}".format(json_object['message']))
                         continue
 
                 try:
@@ -102,7 +103,7 @@ def main():
                 if 'tags' in json_object:
                     # autotag tells that this was autotagged.
                     item.tags = 'autotag ' + ' '.join(('_'.join(x.split()) for x in json_object['tags']))  # diffbot tags
-                    
+
         else:
             logging.warn("Unknown content-type of {}".format(resource.content_type))
 
