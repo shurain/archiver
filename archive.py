@@ -36,6 +36,7 @@ def main():
     bookmarks = pinboard.fetch_from_date(datestr)
     # bookmarks = pinboard.fetch_from_url("http://i.imgur.com/4n92M.jpg")
     # bookmarks = pinboard.fetch_from_url("http://neoocean.net/blog/i/entry/%EB%B2%94%EC%A3%84%EC%97%90-%EB%8C%80%ED%95%9C-%ED%8B%80%EB%A6%B0-%EC%98%88%EC%B8%A1#_post_2057")
+    # bookmarks = pinboard.fetch_from_url("http://nullmodel.egloos.com/3425248")
 
     items = []
     for bookmark in reversed(bookmarks):
@@ -102,7 +103,8 @@ def main():
                 # Diffbot will not contain tags key even if explicitly told to return tags if it does not find any
                 if 'tags' in json_object:
                     # autotag tells that this was autotagged.
-                    item.tags = 'autotag ' + ' '.join(('_'.join(x.split()) for x in json_object['tags']))  # diffbot tags
+                    # Evernote cannot handle tags with commas.
+                    item.tags = 'autotag ' + ' '.join(('_'.join(x.replace(',','').split()) for x in json_object['tags']))  # diffbot tags
 
         else:
             logging.warn("Unknown content-type of {}".format(resource.content_type))
