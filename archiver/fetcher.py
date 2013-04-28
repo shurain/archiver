@@ -28,7 +28,7 @@ class URLFetcher(object):
             #png magic number
             # map(hex, map(ord, self.response.content[:8])) == ['0x89', '0x50', '0x4e', '0x47', '0xd', '0xa', '0x1a', '0xa']
             return True
-        elif self.reponse.content[:2] == '\xff\xd8':
+        elif self.response.content[:2] == '\xff\xd8':
             #jpeg magic number
             return True
         elif self.response.content[:6] in ("GIF89a", "GIF87a"):
@@ -45,7 +45,7 @@ class URLFetcher(object):
             return self.content_type
         elif self.response.content[:8] == '\x89PNG\r\n\x1a\n':
             return 'image/png'
-        elif self.reponse.content[:2] == '\xff\xd8':
+        elif self.response.content[:2] == '\xff\xd8':
             return 'image/jpeg'
         elif self.response.content[:6] in ("GIF89a", "GIF87a"):
             return 'image/gif'
