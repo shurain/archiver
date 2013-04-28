@@ -87,7 +87,7 @@ class EvernoteSink(Sink):
 
         note.content = """<?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-        <en-note>{}""".format(content.encode('ascii', 'xmlcharrefreplace'))
+        <en-note>{}""".format(content.encode('utf-8', 'xmlcharrefreplace'))
 
         if resources:
             note.resources = resources

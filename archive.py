@@ -37,6 +37,7 @@ def main():
     # bookmarks = pinboard.fetch_from_url("http://i.imgur.com/4n92M.jpg")
     # bookmarks = pinboard.fetch_from_url("http://neoocean.net/blog/i/entry/%EB%B2%94%EC%A3%84%EC%97%90-%EB%8C%80%ED%95%9C-%ED%8B%80%EB%A6%B0-%EC%98%88%EC%B8%A1#_post_2057")
     # bookmarks = pinboard.fetch_from_url("http://nullmodel.egloos.com/3425248")
+    # bookmarks = pinboard.fetch_from_url("http://www.daniel-lemire.com/blog/archives/2010/11/02/how-do-search-engines-handle-special-characters-should-you-care/")
 
     items = []
     for bookmark in reversed(bookmarks):
@@ -104,7 +105,8 @@ def main():
                 if 'tags' in json_object:
                     # autotag tells that this was autotagged.
                     # Evernote cannot handle tags with commas.
-                    item.tags = 'autotag ' + ' '.join(('_'.join(x.replace(',','').split()) for x in json_object['tags']))  # diffbot tags
+                    tags = 'autotag ' + ' '.join(('_'.join(x.replace(',','').split()) for x in json_object['tags']))  # diffbot tags
+                    item.tags = tags.encode('utf-8', 'xmlcharrefreplace')
 
         else:
             logging.warn("Unknown content-type of {}".format(resource.content_type))
