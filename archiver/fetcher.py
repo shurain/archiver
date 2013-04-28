@@ -24,8 +24,32 @@ class URLFetcher(object):
         if self.content_type in ['image/gif', 'image/png', 'image/jpeg']:
             #FIXME supporting more image types?
             return True
+        elif self.response.content[:8] == '\x89PNG\r\n\x1a\n':
+            #png magic number
+            # map(hex, map(ord, self.response.content[:8])) == ['0x89', '0x50', '0x4e', '0x47', '0xd', '0xa', '0x1a', '0xa']
+            return True
+        elif self.reponse.content[:2] == '\xff\xd8':
+            #jpeg magic number
+            return True
+        elif self.response.content[:6] in ("GIF89a", "GIF87a"):
+            return True
         else:
             return False
+
+    def image_content_type(self):
+        """Returns the content type of the image.
+        This method assumes that you have already confirmed that the resource is an image.
+        Returns None when no content type matches.
+        """
+        if self.content_type in ['image/gif', 'image/png', 'image/jpeg']:
+            return self.content_type
+        elif self.response.content[:8] == '\x89PNG\r\n\x1a\n':
+            return 'image/png'
+        elif self.reponse.content[:2] == '\xff\xd8':
+            return 'image/jpeg'
+        elif self.response.content[:6] in ("GIF89a", "GIF87a"):
+            return 'image/gif'
+
 
     def is_PDF(self):
         """Check if the resource is a PDF document.

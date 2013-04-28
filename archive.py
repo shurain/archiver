@@ -20,7 +20,7 @@ from archiver.settings import PINBOARD_API_TOKEN, EVERNOTE_DEVELOPER_TOKEN, DIFF
 from archiver.enml import html2enml
 from archiver.database import PinboardDatabase
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def main():
@@ -33,8 +33,8 @@ def main():
 
     logging.info("Fetching data from {}".format(datestr))
 
-    bookmarks = pinboard.fetch_from_date(datestr)
-    # bookmarks = pinboard.fetch_from_url("http://i.imgur.com/4n92M.jpg")
+    # bookmarks = pinboard.fetch_from_date(datestr)
+    bookmarks = pinboard.fetch_from_url("http://i.imgur.com/4n92M.jpg")
 
     items = []
     for bookmark in reversed(bookmarks):
@@ -52,7 +52,7 @@ def main():
             item.content = resource.fetch()  #FIXME this could take very long. Need a way to address this problem.
         elif resource.is_image():
             item = ImageItem.from_pinboard_item(bookmark)
-            item.content_type = resource.content_type
+            item.content_type = resource.image_content_type()
             item.content = resource.fetch()
         elif resource.is_HTML() or resource.is_text():
             if resource.is_HTML():
@@ -60,12 +60,23 @@ def main():
                 json_result = diffbot.extract(item.url, html=True)
                 json_object = json.loads(json_result)
 
+                if 'error' in json_object:
+                    logging.error("Failed to fetch resource at {}".format(item.url))
+                    logging.error("Reason: {}".format(json_object['error']))
+                    continue
+
+                if 'statusCode' in json_object:
+                    if json_object['statusCode'] == 500:
+                        logging.error("Failed to fetch resource at {}".format(item.url))
+                        logging.error("Reason: {}".format(json_object['message']))
+                        continue
+
                 try:
                     item.content = html2enml(json_object['html'])
                 except (etree.XMLSyntaxError, KeyError) as e:
                     # cannot parse
                     # try plaintext
-                    logging.error("Failed to parse {}".format(json_object['url']))
+                    logging.error("Failed to parse {}".format(item.url))
                     logging.error("Reason: {}".format(e))
                     logging.error("Degrading to using text summary")
                     item.content = json_object['text']
@@ -91,6 +102,7 @@ def main():
                 if 'tags' in json_object:
                     # autotag tells that this was autotagged.
                     item.tags = 'autotag ' + ' '.join(('_'.join(x.split()) for x in json_object['tags']))  # diffbot tags
+                    
         else:
             logging.warn("Unknown content-type of {}".format(resource.content_type))
 

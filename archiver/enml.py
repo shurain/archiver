@@ -107,6 +107,8 @@ def remove_prohibited_attributes(root):
         "data",
         "dynsrc",
         "tabindex",
+
+        "scope",  # FIXME added just to parse some articles
     ]
 
     regex_prohibited_attributes = [
