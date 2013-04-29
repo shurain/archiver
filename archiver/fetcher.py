@@ -18,7 +18,10 @@ class URLFetcher(object):
 
     @property
     def content_type(self):
-        return self.response.headers['content-type'].split(';')[0].strip()
+        if 'content-type' in self.response.headers:
+            return self.response.headers['content-type'].split(';')[0].strip()
+        else:
+            return None
 
     def is_image(self):
         if self.content_type in ['image/gif', 'image/png', 'image/jpeg']:
