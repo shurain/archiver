@@ -12,6 +12,8 @@ import sqlite3
 from datetime import datetime
 import socket
 
+from evernote.edam.error.ttypes import EDAMUserException
+
 from archiver.source import PinboardSource
 from archiver.sink import EvernoteSink
 from archiver.fetcher import URLFetcher
@@ -127,6 +129,9 @@ def main():
             evernote.push(item)
         except socket.error as e:
             logging.error("Socket error: {}".format(e))
+            continue
+        except EDAMUserException as e:
+            logging.error("Unrecognized evernote type: {}".format(e))
             continue
 
         pinboard_db.last_updated = item.time
