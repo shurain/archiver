@@ -92,6 +92,16 @@ class TestDiffbotTransformer(unittest.TestCase):
         json_result = self.diffbot.extract(self.url, html=True)
         self.assertEquals(json_result, self.json_html_result)
 
+    def test_malformed_json(self):
+        #FIXME doesn't do much now
+        #FIXME should reflect the current code (need to refactor)
+        url = 'http://www.mnot.net/cache_docs/'
+        json_result = self.diffbot.extract(url, html=True)
+        try:
+            json_object = json.loads(json_result)
+        except json.scanner.JSONDecodeError:
+            logging.error("Unable to decode JSON for resource at : {}".format(bookmark.url))
+
 
 class TestURLFetcher(unittest.TestCase):
     def setUp(self):
@@ -124,9 +134,16 @@ class TestURLFetcher(unittest.TestCase):
         resource.fetch()
 
     def test_image_content_type(self):
-        resource =URLFetcher(self.html_url)
+        resource = URLFetcher(self.html_url)
         self.assertFalse(resource.is_image())
         self.assertEquals(resource.image_content_type(), None)
+
+    def test_no_content_type(self):
+        url = "http://www.1011ltd.com/web/blog/post/evolving_pid"
+        resource = URLFetcher(url)
+        self.assertFalse(resource.is_image())
+        self.assertFalse(resource.is_PDF())
+        self.assertFalse(resource.is_HTML())
 
 
 class TestItem(unittest.TestCase):

@@ -10,6 +10,7 @@ import requests
 import logging
 import sqlite3
 from datetime import datetime
+import socket
 
 from archiver.source import PinboardSource
 from archiver.sink import EvernoteSink
@@ -38,6 +39,7 @@ def main():
     # bookmarks = pinboard.fetch_from_url("http://neoocean.net/blog/i/entry/%EB%B2%94%EC%A3%84%EC%97%90-%EB%8C%80%ED%95%9C-%ED%8B%80%EB%A6%B0-%EC%98%88%EC%B8%A1#_post_2057")
     # bookmarks = pinboard.fetch_from_url("http://nullmodel.egloos.com/3425248")
     # bookmarks = pinboard.fetch_from_url("http://www.daniel-lemire.com/blog/archives/2010/11/02/how-do-search-engines-handle-special-characters-should-you-care/")
+    # bookmarks = pinboard.fetch_from_url("http://www.1011ltd.com/web/blog/post/evolving_pid")  # no content type returned
 
     items = []
     for bookmark in reversed(bookmarks):
@@ -61,7 +63,11 @@ def main():
             if resource.is_HTML():
                 item = HTMLItem.from_pinboard_item(bookmark)
                 json_result = diffbot.extract(item.url, html=True)
-                json_object = json.loads(json_result)
+                try:
+                    json_object = json.loads(json_result)
+                except json.scanner.JSONDecodeError:
+                    logging.error("Unable to decode JSON for resource at : {}".format(bookmark.url))
+                    continue
 
                 if 'error' in json_object:
                     logging.error("Failed to fetch resource at {}".format(item.url))
@@ -74,19 +80,24 @@ def main():
                         logging.error(u"Reason: {}".format(json_object['message']))
                         continue
 
-                try:
+                if 'html' in json_object:
                     item.content = html2enml(json_object['html'])
-                except (etree.XMLSyntaxError, KeyError) as e:
-                    # cannot parse
+                else:
                     # try plaintext
-                    logging.error("Failed to parse {}".format(item.url))
-                    logging.error("Reason: {}".format(e))
-                    logging.error("Degrading to using text summary")
-                    item.content = json_object['text']
+                    if 'text' not in json_object:
+                        logging.error("Failed to fetch HTML document at all: {}".format(item.url))
+                        continue
+                    logging.warn("Failed to fetch HTML document for {}".format(item.url))
+                    logging.warn("Degrading to using text summary")
+                    item.content = html2enml(json_object['text'])
             else:
                 item = TextItem.from_pinboard_item(bookmark)
                 json_result = diffbot.extract(item.url, html=True)
-                json_object = json.loads(json_result)
+                try:
+                    json_object = json.loads(json_result)
+                except json.scanner.JSONDecodeError:
+                    logging.error("Unable to decode JSON for resource at : {}".format(bookmark.url))
+                    continue
 
                 # resource is plain text
                 contents = resource.fetch().split('\n\n')
@@ -109,9 +120,15 @@ def main():
                     item.tags = tags.encode('utf-8', 'xmlcharrefreplace')
 
         else:
-            logging.warn("Unknown content-type of {}".format(resource.content_type))
+            logging.error("Unknown content-type of {}".format(resource.content_type))
+            continue
 
-        evernote.push(item)
+        try:
+            evernote.push(item)
+        except socket.error as e:
+            logging.error("Socket error: {}".format(e))
+            continue
+
         pinboard_db.last_updated = item.time
 
     pinboard_db.close()
