@@ -52,6 +52,10 @@ def main():
             logging.error("Failed to fetch resource at {}".format(bookmark.url))
             logging.error("Reason: {}".format(e))
             continue
+        except requests.exceptions.TooManyRedirects as e:
+            logging.error("Failed to fetch resource at {}".format(bookmark.url))
+            logging.error("Reason: {}".format(e))
+            continue
 
         item = Item()
         if resource.is_PDF():

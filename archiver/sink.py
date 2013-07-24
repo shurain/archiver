@@ -65,16 +65,16 @@ class EvernoteSink(Sink):
     def note_attribute(self, source_url=''):
         attributes = Types.NoteAttributes()
         attributes.sourceURL = source_url
-        return attributes 
+        return attributes
 
     def create_note(self, title, content, notebook_name='', tags='', attributes=None, resources=None):
         note = Types.Note()
         note.title = title
         if attributes:
-            note.attributes = attributes 
+            note.attributes = attributes
         if tags:
-            note.tagNames = tags.split()  # Assuming no spaces in tags
-            logging.debug(note.tagNames)            
+            note.tagNames = [t.encode('utf-8', 'xmlcharrefreplace') for t in tags.split()]  # Assuming no spaces in tags
+            logging.debug(note.tagNames)
 
         if notebook_name:
             notebooks = self.note_store.listNotebooks(self.token)
@@ -122,7 +122,7 @@ class EvernoteSink(Sink):
         elif item.itemtype == 'text':
             kwargs['content'] = item.content
         else:
-            # XXX Assuming plaintext type        
+            # XXX Assuming plaintext type
             # Should I raise exception for unknown items?
             item.itemtype = 'text'
 

@@ -31,5 +31,5 @@ class DiffbotTransformer(Transformer):
         if options:
             url += '&' + options
 
-        response = requests.get(url)
+        response = requests.get(url, verify=False)
         return response.content

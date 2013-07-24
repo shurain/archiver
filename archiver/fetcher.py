@@ -5,6 +5,7 @@ A module for fetching resource indicated by a URL.
 """
 
 import requests
+import logging
 
 
 class URLFetcher(object):
@@ -14,7 +15,7 @@ class URLFetcher(object):
         self.url = url
         # XXX Could allowing redirects become a problem?
         # XXX maybe stream might timeout?
-        self.response = requests.get(url, allow_redirects=True, stream=True)
+        self.response = requests.get(url, allow_redirects=True, stream=True, verify=False)
 
     @property
     def content_type(self):
@@ -94,7 +95,10 @@ class URLFetcher(object):
         Has a guard to check if the content exceeds the size limit.
         Size limit can be overrided by settings the SIZELIMIT variable.
         """
-        if int(self.response.headers['content-length']) > self.SIZELIMIT:
+        if 'content-length' not in self.response.headers:
+            logging.info("No content-length header, proceeding anyway.")
+        elif int(self.response.headers['content-length']) > self.SIZELIMIT:
             #FIXME create a specific exception
             raise Exception("File too large")
+
         return self.response.content
