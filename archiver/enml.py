@@ -131,8 +131,12 @@ def remove_prohibited_attributes(root):
 
         #url sanitization
         if 'href' in node.attrib:
-            url = urlparse(node.attrib.get('href'))
-            if url.scheme not in ('http', 'https', 'file'):
+            try:
+                url = urlparse(node.attrib.get('href'))
+                if url.scheme not in ('http', 'https', 'file'):
+                    node.attrib.pop('href')
+            except ValueError: 
+                logging.info("Unexpected href parse error: {}".format(node.attrib.get('href')))
                 node.attrib.pop('href')
 
     return root
